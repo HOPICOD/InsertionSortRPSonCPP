@@ -1,0 +1,7 @@
+﻿  lab3_desktop.cpp
+D:\VS code\lab3_desktop\lab3_desktop.cpp(102,50): warning C4101: e: неиспользованная локальная переменная
+D:\VS code\lab3_desktop\lab3_desktop.cpp(106,46): warning C4101: e: неиспользованная локальная переменная
+D:\VS code\lab3_desktop\lab3_desktop.cpp(188,31): warning C4101: e: неиспользованная локальная переменная
+  lab3_desktop.vcxproj -> D:\VS code\lab3_desktop\x64\Debug\lab3_desktop.exe
+  "pwsh.exe" не является внутренней или внешней
+  командой, исполняемой программой или пакетным файлом.

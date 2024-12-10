@@ -1,0 +1,6 @@
+﻿  arrayInteraction.cpp
+  InsertionSort.cpp
+  lab3_desktop.cpp
+D:\VS code\lab3_desktop\lab3_desktop.cpp(4,10): error C1083: Не удается открыть файл включение: InsertionSort.h: No such file or directory,
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
