@@ -1,0 +1,5 @@
+﻿  TestDBInsertionSort.cpp
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\TestDBInsertionSort.cpp(87,40): warning C4101: e: неиспользованная локальная переменная
+  TestDBInsertionSort.vcxproj -> D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\TestDBInsertionSort.exe
+  "pwsh.exe" не является внутренней или внешней
+  командой, исполняемой программой или пакетным файлом.

@@ -1,0 +1,6 @@
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\TestDBInsertionSort.exe
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\TestDBInsertionSort.vcxproj.CopyComplete
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\pqxx.dll
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\LIBPQ.dll
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\libssl-3-x64.dll
+D:\VS code\lab3_desktop\TestDB\TestDBInsertionSort\x64\Debug\libcrypto-3-x64.dll
