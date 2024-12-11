@@ -25,7 +25,7 @@ int main()
     // Инициализация GLFW и Dear ImGui
     if (!glfwInit()) return -1;
     // Создание окна GLFW
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Программа сортировки методом вставок", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Программа сортировки методом вставок", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -42,7 +42,7 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 130");// Инициализация привязки ImGui к OpenGL3
 
     // Переменные для работы с массивами и сообщениями
-    char inputArrayBuf[256] =""; // Буфер для ввода массива
+    char inputArrayBuf[BUFSIZ] =""; // Буфер для ввода массива
     vector<double> unsortedArray;
     vector<double> sortedArray;
     string resultMessage;
@@ -67,6 +67,26 @@ int main()
 
         // Интерфейс
         ImGui::Begin("Сортировка методом вставок");
+
+        if (ImGui::Button("Справка", ImVec2(100, 30))) { // Кнопка размером 100x30
+            // Выводим модальное окно со справкой
+            ImGui::OpenPopup("HelpPopup");
+        }
+
+        // Описание всплывающего окна справки
+        if (ImGui::BeginPopup("HelpPopup")) {
+            ImGui::Text("Справка о программе");
+            ImGui::Separator();
+            ImGui::TextWrapped("Данная программа позволяет сортировать массивы методом вставок. " //Вывод многострочного кода
+                "Вы можете работать с массивами из базы данных, "
+                "добавлять новые массивы, редактировать и сортировать их.");
+            ImGui::TextWrapped("Числа вводятся через запятую, дробная часть разделяется с целой частью точкой.");
+            ImGui::Separator(); // Разделитель для элементов
+            if (ImGui::Button("Закрыть")) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
 
         // Поле ввода массива
         ImGui::InputText("Введите массив", inputArrayBuf, IM_ARRAYSIZE(inputArrayBuf));
@@ -195,6 +215,7 @@ int main()
                 // Обработка ошибок
             }
         }
+
 
         // Кнопка для загрузки всех массивов из базы данных
         if (ImGui::Button("Загрузить все массивы из базы данных")) {
