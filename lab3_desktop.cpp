@@ -14,6 +14,7 @@
 
 using namespace std;
 
+// Перечисление для выбора метода сортировки
 enum sortMethod { sortIncrease = 0, sortDecrease = 1 };
 
 
@@ -23,49 +24,51 @@ int main()
     locale::global(locale("C"));
     // Инициализация GLFW и Dear ImGui
     if (!glfwInit()) return -1;
+    // Создание окна GLFW
     GLFWwindow* window = glfwCreateWindow(1280, 720, "Программа сортировки методом вставок", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwMakeContextCurrent(window); // Установка контекста OpenGL для текущего окна
+    glfwSwapInterval(1); // Включение вертикальной синхронизации
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("D:/VS code/lab3_desktop/font/Roboto.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-    ImGui_ImplOpenGL3_Init("#version 130");
+    // Инициализация ImGui
+    IMGUI_CHECKVERSION();// Проверка версии ImGui
+    ImGui::CreateContext();// Создание контекста ImGui
+    ImGui_ImplGlfw_InitForOpenGL(window, true);// Инициализация привязки ImGui к GLFW
+    ImGuiIO& io = ImGui::GetIO(); // Получение объекта ввода/вывода ImGui
+    io.Fonts->AddFontFromFileTTF("D:/VS code/lab3_desktop/font/Roboto.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());// Добавление шрифта с поддержкой кириллицы
+    ImGui_ImplOpenGL3_Init("#version 130");// Инициализация привязки ImGui к OpenGL3
 
-    char inputArrayBuf[256] ="";
+    // Переменные для работы с массивами и сообщениями
+    char inputArrayBuf[256] =""; // Буфер для ввода массива
     vector<double> unsortedArray;
     vector<double> sortedArray;
     string resultMessage;
     string errorMessage;
     string saveMessage;
-    int arrayIdToEdit = 0;
-    vector<pair<int, pair<vector<double>, vector<double>>>> dbData;
+    int arrayIdToEdit = 0; // ID массива для редактирования
+    vector<pair<int, pair<vector<double>, vector<double>>>> dbData; // Данные из базы, хранит в себе id, неотсортированный и отсортированный массив
 
     // Переменная для выбора типа сортировки
     sortMethod sortMethod = sortIncrease;  // По умолчанию сортировка по возрастанию
-    const char* sortMethods[] = { "По возрастанию", "По убыванию" };
+    const char* sortMethods[] = { "По возрастанию", "По убыванию" }; // Массив названий методов сортировки
 
     // Создаем объект класса сортировки
     InsertionSort sorter;
 
     // Основной цикл
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    while (!glfwWindowShouldClose(window)) {// Пока окно не закрыто
+        glfwPollEvents();// Обработка событий окна
+        ImGui_ImplOpenGL3_NewFrame();// Начало нового кадра для OpenGL3
+        ImGui_ImplGlfw_NewFrame();// Начало нового кадра для GLFW
+        ImGui::NewFrame();// Начало нового кадра для ImGui
 
         // Интерфейс
         ImGui::Begin("Сортировка методом вставок");
 
         // Поле ввода массива
-       // Преобразуем std::string в C-style строку
         ImGui::InputText("Введите массив", inputArrayBuf, IM_ARRAYSIZE(inputArrayBuf));
 
         // Выбор метода сортировки
@@ -78,13 +81,14 @@ int main()
             sortedArray.clear();
             resultMessage.clear();
             errorMessage.clear();
-            string inputString(inputArrayBuf); // Создаем строку для использования в istringstream
+            string inputString(inputArrayBuf); // Преобразование буфера в строку
 
+            // Проверка на пустой ввод
             if (inputString.empty() || inputString.find_first_not_of(' ') == std::string::npos) {
                 errorMessage = "Ошибка: Пустая строка или неверный формат ввода";
             }
             else {
-
+                // Обработка строки ввода
                 stringstream ss(inputString); // Используем stringstream для разбора строки
                 string token;
 
@@ -170,15 +174,17 @@ int main()
             errorMessage.clear();
             try {
                 pqxx::connection C("dbname=DesktopInsertionSort user=postgres password=Hp78219038 host=localhost port=5432");
+                //Проверка на правильный ID
                 if (isIdCorrect(C, arrayIdToEdit, unsortedArray, sortedArray)) {
-                    unsortedArray = getArrayFromDatabase(C, arrayIdToEdit); // Загружаем массив с ID = 1
-                    // Преобразуем массив в строку и помещаем в буфер
+                    // Загружаем массив из базы данных с указанным ID
+                    unsortedArray = getArrayFromDatabase(C, arrayIdToEdit);
+                    // Преобразуем массив в строку и помещаем в буфер для отображения в поле ввода
                     stringstream ss;
                     for (size_t i = 0; i < unsortedArray.size(); ++i) {
-                        if (i != 0) ss << ", ";
-                        ss << unsortedArray[i];
+                        if (i != 0) ss << ", "; // Добавляем запятые между числами
+                        ss << unsortedArray[i]; // Добавляем число
                     }
-                    string arrayStr = ss.str();
+                    string arrayStr = ss.str(); // Конвертируем поток в строку
                     strncpy_s(inputArrayBuf, sizeof(inputArrayBuf), arrayStr.c_str(), _TRUNCATE); // Заполняем буфер для ввода
                 }
                 else {
@@ -190,29 +196,29 @@ int main()
             }
         }
 
-        // Кнопка для загрузки всех массивов
+        // Кнопка для загрузки всех массивов из базы данных
         if (ImGui::Button("Загрузить все массивы из базы данных")) {
             try {
                 pqxx::connection C("dbname=DesktopInsertionSort user=postgres password=Hp78219038 host=localhost port=5432");
-                dbData = getAllArraysFromDatabase(C);
+                dbData = getAllArraysFromDatabase(C); // Загружаем все массивы из базы данных
             }
             catch (const std::exception& e) {
                 errorMessage = std::string("Ошибка: ") + e.what();
             }
         }
-
+        // Проверяем, есть ли загруженные массивы
         if (!dbData.empty()) {
             ImGui::Text("Список массивов:");
-            for (const auto& record : dbData) {
-                ImGui::Separator();
-                ImGui::Text("ID: %d", record.first);
-                ImGui::Text("Unsorted Array: %s", arrayToString(record.second.first).c_str());
-                ImGui::Text("Sorted Array: %s", arrayToString(record.second.second).c_str());
+            for (const auto& record : dbData) { // Перебираем каждый загруженный массив
+                ImGui::Separator(); // Разделительная линия между элементами списка
+                ImGui::Text("ID: %d", record.first); // Отображаем ID массива
+                ImGui::Text("Unsorted Array: %s", arrayToString(record.second.first).c_str()); // Отображаем исходный массив
+                ImGui::Text("Sorted Array: %s", arrayToString(record.second.second).c_str()); // Отображаем отсортированный массив
             }
         }
 
 
-        ImGui::End();
+        ImGui::End();// Завершение окна ImGui
 
         // Рендеринг
         ImGui::Render();

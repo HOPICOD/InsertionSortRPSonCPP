@@ -4,7 +4,7 @@
 #include <iomanip>
 
 using namespace std;
-
+// Преобразование массива в строку
 string arrayToString(const vector<double>& array) {
     stringstream ss;
    

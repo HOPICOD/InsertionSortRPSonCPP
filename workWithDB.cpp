@@ -1,22 +1,22 @@
-#include <pqxx/pqxx>  // Для работы с PostgreSQL
+#include <pqxx/pqxx>  // Р”Р»СЏ СЂР°Р±РѕС‚С‹ СЃ PostgreSQL
 #include <iostream> 
 #include "arrayInteraction.h"
 
 using namespace std;
 
-// Функция для подключения к базе данных и выполнения SQL-запросов
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє Р±Р°Р·Рµ РґР°РЅРЅС‹С… Рё РІС‹РїРѕР»РЅРµРЅРёСЏ SQL-Р·Р°РїСЂРѕСЃРѕРІ
 void connectAndSaveData(vector<double>& unsortedArray, vector<double>& sortedArray) {
 
     try {
-        // Параметры подключения
+        // РџР°СЂР°РјРµС‚СЂС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
         pqxx::connection C("dbname=DesktopInsertionSort user=postgres password=Hp78219038 host=localhost port=5432");
 
         if (C.is_open()) {
             std::cout << "Connected to database successfully: " << C.dbname() << std::endl;
 
-            pqxx::work W(C);  // Создание транзакции
+            pqxx::work W(C);  // РЎРѕР·РґР°РЅРёРµ С‚СЂР°РЅР·Р°РєС†РёРё
 
-            // Преобразуем массивы в строку формата PostgreSQL для массивов
+            // РџСЂРµРѕР±СЂР°Р·СѓРµРј РјР°СЃСЃРёРІС‹ РІ СЃС‚СЂРѕРєСѓ С„РѕСЂРјР°С‚Р° PostgreSQL РґР»СЏ РјР°СЃСЃРёРІРѕРІ
             auto arrayToPostgresString = [](const std::vector<double>& array) {
                 std::ostringstream oss;
                 oss << "{";
@@ -33,11 +33,11 @@ void connectAndSaveData(vector<double>& unsortedArray, vector<double>& sortedArr
             std::string unsortedArrayStr = arrayToPostgresString(unsortedArray);
             std::string sortedArrayStr = arrayToPostgresString(sortedArray);
 
-            // Вставка в таблицу
+            // Р’СЃС‚Р°РІРєР° РІ С‚Р°Р±Р»РёС†Сѓ
             std::string query = "INSERT INTO arrays_table (unsorted_array, sorted_array) VALUES ('" +
                 W.esc(unsortedArrayStr) + "', '" + W.esc(sortedArrayStr) + "');";
             W.exec(query);
-            W.commit();  // Завершаем транзакцию
+            W.commit();  // Р—Р°РІРµСЂС€Р°РµРј С‚СЂР°РЅР·Р°РєС†РёСЋ
 
             std::cout << "Arrays save succesfully!" << std::endl;
         }
@@ -49,20 +49,22 @@ void connectAndSaveData(vector<double>& unsortedArray, vector<double>& sortedArr
         cerr << "Error: " << e.what() << std::endl;
     }
 }
-// функция выдачи массивов находящихся в базе данных
+// С„СѓРЅРєС†РёСЏ РІС‹РґР°С‡Рё РјР°СЃСЃРёРІРѕРІ РЅР°С…РѕРґСЏС‰РёС…СЃСЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
 vector<pair<int, pair<vector<double>, vector<double>>>> getAllArraysFromDatabase(pqxx::connection& C) {
-    vector<pair<int, pair<vector<double>, vector<double>>>> data;
+    vector<pair<int, pair<vector<double>, vector<double>>>> data; // Р’РµРєС‚РѕСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…
 
     try {
-        pqxx::work W(C);
+        pqxx::work W(C); // РЎРѕР·РґР°РЅРёРµ С‚СЂР°РЅР·Р°РєС†РёРё
         string query = "SELECT id, unsorted_array, sorted_array FROM arrays_table;";
-        pqxx::result R = W.exec(query);
+        pqxx::result R = W.exec(query); // Р’С‹РїРѕР»РЅРµРЅРёРµ Р·Р°РїСЂРѕСЃР° Рё РїРѕР»СѓС‡РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р°  
 
+        // РџСЂРѕС…РѕРґРёРј РїРѕ РІСЃРµРј СЃС‚СЂРѕРєР°Рј СЂРµР·СѓР»СЊС‚Р°С‚Р°
         for (const auto& row : R) {
-            int id = row[0].as<int>();
+            int id = row[0].as<int>(); // РР·РІР»РµРєР°РµРј ID РјР°СЃСЃРёРІР°
 
-            // Парсинг unsorted_array
+            // РџР°СЂСЃРёРЅРі unsorted_array
             string unsortedStr = row[1].c_str();
+            // РЈРґР°Р»СЏРµРј '{' Рё '}'
             unsortedStr.erase(remove(unsortedStr.begin(), unsortedStr.end(), '{'), unsortedStr.end());
             unsortedStr.erase(remove(unsortedStr.begin(), unsortedStr.end(), '}'), unsortedStr.end());
 
@@ -70,64 +72,65 @@ vector<pair<int, pair<vector<double>, vector<double>>>> getAllArraysFromDatabase
             vector<double> unsortedArray;
             string token;
             while (getline(unsortedStream, token, ',')) {
-                unsortedArray.push_back(stod(token));
+                unsortedArray.push_back(stod(token));  // РџСЂРµРѕР±СЂР°Р·СѓРµРј СЃС‚СЂРѕРєСѓ РІ С‡РёСЃР»Рѕ Рё РґРѕР±Р°РІР»СЏРµРј РІ РІРµРєС‚РѕСЂ
             }
 
-            // Парсинг sorted_array
+            // РџР°СЂСЃРёРЅРі sorted_array
             string sortedStr = row[2].c_str();
+            // РЈРґР°Р»СЏРµРј '{' Рё '}'
             sortedStr.erase(remove(sortedStr.begin(), sortedStr.end(), '{'), sortedStr.end());
             sortedStr.erase(remove(sortedStr.begin(), sortedStr.end(), '}'), sortedStr.end());
 
             stringstream sortedStream(sortedStr);
             vector<double> sortedArray;
             while (getline(sortedStream, token, ',')) {
-                sortedArray.push_back(stod(token));
+                sortedArray.push_back(stod(token)); // РџСЂРµРѕР±СЂР°Р·СѓРµРј СЃС‚СЂРѕРєСѓ РІ С‡РёСЃР»Рѕ Рё РґРѕР±Р°РІР»СЏРµРј РІ РІРµРєС‚РѕСЂ
             }
 
-            // Добавляем запись в список
+            // Р”РѕР±Р°РІР»СЏРµРј ID, РЅРµСЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ Рё РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РјР°СЃСЃРёРІ РІ РёС‚РѕРіРѕРІС‹Р№ СЃРїРёСЃРѕРє
             data.emplace_back(id, make_pair(unsortedArray, sortedArray));
         }
 
-        W.commit();
+        W.commit();// Р¤РёРєСЃР°С†РёСЏ С‚СЂР°РЅР·Р°РєС†РёРё
     }
     catch (exception& e) {
-        throw runtime_error(string("Ошибка загрузки данных: ") + e.what());
+        throw runtime_error(string("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С…: ") + e.what());
     }
 
     return data;
 }
 
-// Функция для загрузки массива из базы данных
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ Р·Р°РіСЂСѓР·РєРё РјР°СЃСЃРёРІР° РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 vector<double> getArrayFromDatabase(pqxx::connection& C, int id) {
-    pqxx::work W(C);
+    pqxx::work W(C); // РЎРѕР·РґР°РЅРёРµ С‚СЂР°РЅР·Р°РєС†РёРё
     string query = "SELECT unsorted_array FROM arrays_table WHERE id = " + to_string(id);
-    pqxx::result R = W.exec(query);
+    pqxx::result R = W.exec(query); // Р’С‹РїРѕР»РЅРµРЅРёРµ Р·Р°РїСЂРѕСЃР°
 
     vector<double> array;
-    if (!R.empty()) {
-        string arrayStr = R[0][0].as<string>(); // Получаем строку с массивом
-        arrayStr.erase(0, 1); // Убираем открывающую скобку
-        arrayStr.erase(arrayStr.size() - 1); // Убираем закрывающую скобку
+    if (!R.empty()) { // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РЅРµ РїСѓСЃС‚РѕР№
+        string arrayStr = R[0][0].as<string>(); // РџРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ СЃ РјР°СЃСЃРёРІРѕРј
+        arrayStr.erase(0, 1); // РЈР±РёСЂР°РµРј РѕС‚РєСЂС‹РІР°СЋС‰СѓСЋ СЃРєРѕР±РєСѓ
+        arrayStr.erase(arrayStr.size() - 1); // РЈР±РёСЂР°РµРј Р·Р°РєСЂС‹РІР°СЋС‰СѓСЋ СЃРєРѕР±РєСѓ
 
         stringstream ss(arrayStr);
         string token;
         while (getline(ss, token, ',')) {
-            array.push_back(stod(token)); // Преобразуем строку в число
+            array.push_back(stod(token)); // РџСЂРµРѕР±СЂР°Р·СѓРµРј СЃС‚СЂРѕРєСѓ РІ С‡РёСЃР»Рѕ Рё РґРѕР±Р°РІР»СЏРµРј РІ РІРµРєС‚РѕСЂ
         }
     }
     return array;
 }
 
-// Функция для загрузки массива по id
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ Р·Р°РіСЂСѓР·РєРё РјР°СЃСЃРёРІР° РїРѕ id
 bool isIdCorrect(pqxx::connection& C, int arrayId, vector<double>& unsortedArray, vector<double>& sortedArray) {
-    pqxx::work W(C);
+    pqxx::work W(C);  // РЎРѕР·РґР°РЅРёРµ С‚СЂР°РЅР·Р°РєС†РёРё
     stringstream query;
     query << "SELECT unsorted_array, sorted_array FROM arrays_table WHERE id = " << arrayId;
 
-    pqxx::result R = W.exec(query.str());
+    pqxx::result R = W.exec(query.str()); // Р’С‹РїРѕР»РЅРµРЅРёРµ Р·Р°РїСЂРѕСЃР°
 
     if (R.empty()) {
-        return false;  // Массив с таким id не найден
+        return false;  // РњР°СЃСЃРёРІ СЃ С‚Р°РєРёРј id РЅРµ РЅР°Р№РґРµРЅ
     }
-    return true;  // Массив найден
+    return true;  // РњР°СЃСЃРёРІ РЅР°Р№РґРµРЅ
 }
