@@ -33,16 +33,18 @@ int main()
     glfwMakeContextCurrent(window); // Установка контекста OpenGL для текущего окна
     glfwSwapInterval(1); // Включение вертикальной синхронизации
 
+
     // Инициализация ImGui
     IMGUI_CHECKVERSION();// Проверка версии ImGui
     ImGui::CreateContext();// Создание контекста ImGui
     ImGui_ImplGlfw_InitForOpenGL(window, true);// Инициализация привязки ImGui к GLFW
     ImGuiIO& io = ImGui::GetIO(); // Получение объекта ввода/вывода ImGui
-    io.Fonts->AddFontFromFileTTF("D:/VS code/lab3_desktop/font/Roboto.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());// Добавление шрифта с поддержкой кириллицы
+    io.Fonts->AddFontFromFileTTF("D:/VS code/lab3_desktop/font/Roboto.ttf", 20.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());// Добавление шрифта с поддержкой кириллицы
     ImGui_ImplOpenGL3_Init("#version 130");// Инициализация привязки ImGui к OpenGL3
 
     // Переменные для работы с массивами и сообщениями
     char inputArrayBuf[BUFSIZ] =""; // Буфер для ввода массива
+    bool isArraySort = false;
     vector<double> unsortedArray;
     vector<double> sortedArray;
     string resultMessage;
@@ -73,6 +75,9 @@ int main()
             ImGui::OpenPopup("HelpPopup");
         }
 
+        // Устанавливаем размер окна справки перед его отображением
+        ImGui::SetNextWindowSize(ImVec2(500, 250), ImGuiCond_Always); // Размер окна 400x300
+
         // Описание всплывающего окна справки
         if (ImGui::BeginPopup("HelpPopup")) {
             ImGui::Text("Справка о программе");
@@ -85,6 +90,7 @@ int main()
             if (ImGui::Button("Закрыть")) {
                 ImGui::CloseCurrentPopup();
             }
+
             ImGui::EndPopup();
         }
 
@@ -96,6 +102,7 @@ int main()
 
         // Кнопка сортировки
         if (ImGui::Button("Сортировать")) {
+            isArraySort = true;
             // Преобразуем строку в массив
             unsortedArray.clear();
             sortedArray.clear();
@@ -121,14 +128,18 @@ int main()
                     if (!token.empty()) { // Проверяем не пустой ли токен
                         try {
                             double num = stod(token); // Преобразуем строку в число с плавающей запятой
+                            if (abs(num) >= INT_MAX) {
+                                errorMessage = "Ошибка: число '" + token + "' превышает допустимое значение";
+                                break;
+                            }
                             unsortedArray.push_back(num);
                         }
                         catch (invalid_argument& e) { // Проверка на неверные данные
-                            errorMessage = "Ошибка: токен '" + token + "' не является числом.";
+                            errorMessage = "Ошибка: элемент массива '" + token + "' не является числом.";
                             break;
                         }
                         catch (out_of_range& e) { // Проверка на выход за предел диапазона 
-                            errorMessage = "Ошибка: токен '" + token + "' выходит за пределы диапазона.";
+                            errorMessage = "Ошибка: элемент массива '" + token + "' выходит за пределы диапазона.";
                             break;
                         }
                     }
@@ -160,25 +171,43 @@ int main()
 
         // Вывод результата
         if (!resultMessage.empty()) {
-            ImGui::Text("Отсортированный массив: %s", resultMessage.c_str());
+            ImGui::Text("Отсортированный массив:");
+            ImGui::PushTextWrapPos(ImGui::GetContentRegionAvail().x); // Устанавливаем максимальную ширину для переноса
+            ImGui::TextWrapped("%s", resultMessage.c_str()); // Используем TextWrapped для переноса текста
+            ImGui::PopTextWrapPos(); // Сбрасываем настройки переноса
         }
 
         // Кнопка для сохранения массивов в базу данных
-        if (ImGui::Button("Сохранить массивы в базу данных")) {
+        if (ImGui::Button("Сохранить массивы")) {
             errorMessage.clear();
             saveMessage.clear();
-            if (unsortedArray.empty() || sortedArray.empty()) {
-                errorMessage = "Ошибка: Один или оба массива пусты! Сохранение невозможно.";
+            if (!isArraySort) {
+                resultMessage = "";
+                errorMessage = "Ошибка: Новый массив не был отсортирован или попытка сохранить тот-же массив. Сохранение невозможно.";
             }
             else {
-                try {
-                    connectAndSaveData(unsortedArray, sortedArray); // Вызов функции сохранения
-                    saveMessage = "Данные сохранены успешно!";
+                if (unsortedArray.empty() || sortedArray.empty()) {
+                    errorMessage = "Ошибка: Один или оба массива пусты! Сохранение невозможно.";
                 }
-                catch (exception& e) {
-                    errorMessage = string("Ошибка при сохранении: ") + e.what();
+                else {
+                    try {
+                        // Пересортировываем массив перед сохранением
+                        sortedArray = unsortedArray; // Копируем неотсортированный массив
+                        if (sortMethod == sortIncrease) {
+                            sorter.sortIncrease(sortedArray); // Сортировка по возрастанию
+                        }
+                        else {
+                            sorter.sortDecrease(sortedArray); // Сортировка по убыванию
+                        }
+                        connectAndSaveData(unsortedArray, sortedArray); // Вызов функции сохранения
+                        saveMessage = "Данные сохранены успешно!";
+                    }
+                    catch (exception& e) {
+                        errorMessage = string("Ошибка при сохранении: ") + e.what();
+                    }
                 }
             }
+            isArraySort = false;
         }
 
         // Выводим сообщения об сохранении
@@ -218,7 +247,7 @@ int main()
 
 
         // Кнопка для загрузки всех массивов из базы данных
-        if (ImGui::Button("Загрузить все массивы из базы данных")) {
+        if (ImGui::Button("Загрузить все массивы")) {
             try {
                 pqxx::connection C("dbname=DesktopInsertionSort user=postgres password=Hp78219038 host=localhost port=5432");
                 dbData = getAllArraysFromDatabase(C); // Загружаем все массивы из базы данных
