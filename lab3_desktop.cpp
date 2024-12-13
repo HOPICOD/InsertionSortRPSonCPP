@@ -76,7 +76,7 @@ int main()
         }
 
         // Устанавливаем размер окна справки перед его отображением
-        ImGui::SetNextWindowSize(ImVec2(500, 250), ImGuiCond_Always); // Размер окна 400x300
+        ImGui::SetNextWindowSize(ImVec2(500, 250), ImGuiCond_Always); // Размер окна 500x250
 
         // Описание всплывающего окна справки
         if (ImGui::BeginPopup("HelpPopup")) {
@@ -181,7 +181,7 @@ int main()
         if (ImGui::Button("Сохранить массивы")) {
             errorMessage.clear();
             saveMessage.clear();
-            if (!isArraySort) {
+            if (!isArraySort) { // Проверка, был ли отсортирован массив при сохранении
                 resultMessage = "";
                 errorMessage = "Ошибка: Новый массив не был отсортирован или попытка сохранить тот-же массив. Сохранение невозможно.";
             }
@@ -271,22 +271,22 @@ int main()
         ImGui::End();// Завершение окна ImGui
 
         // Рендеринг
-        ImGui::Render();
+        ImGui::Render(); // Финализирует кадр ImGui
         int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
+        glfwGetFramebufferSize(window, &display_w, &display_h); // Определяет текущий размер окна
+        glViewport(0, 0, display_w, display_h); // Устанавливает область вывода для OpenGL
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f); // Устанавливает цвет очистки для буфера экрана
+        glClear(GL_COLOR_BUFFER_BIT); // Очищает цветовой буфер экрана
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); // Рендерит собранные данные ImGui через OpenGL
+        glfwSwapBuffers(window); // Переключает буферы кадра
     }
 
     // Очистка
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    ImGui_ImplOpenGL3_Shutdown(); // Освобождает ресурсы, выделенные для привязки ImGui к OpenGL3
+    ImGui_ImplGlfw_Shutdown(); // Освобождает ресурсы, выделенные для привязки ImGui к GLFW
+    ImGui::DestroyContext(); // Освобождает память, используемую для хранения состояния ImGui, шрифтов и других ресурсов
+    glfwDestroyWindow(window); // Уничтожает окно, созданное GLFW
+    glfwTerminate(); // Завершает работу GLFW
 
     return 0;
 }
