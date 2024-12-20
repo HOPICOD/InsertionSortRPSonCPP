@@ -241,7 +241,7 @@ int main()
                 }
             }
             catch (exception& e) {
-                // Обработка ошибок
+                errorMessage = "Ошибка: не удалось загрузить данные."; // Обработка ошибок
             }
         }
 
@@ -260,10 +260,12 @@ int main()
         if (!dbData.empty()) {
             ImGui::Text("Список массивов:");
             for (const auto& record : dbData) { // Перебираем каждый загруженный массив
+                ImGui::PushTextWrapPos(ImGui::GetContentRegionAvail().x); // Устанавливаем максимальную ширину для переноса
                 ImGui::Separator(); // Разделительная линия между элементами списка
-                ImGui::Text("ID: %d", record.first); // Отображаем ID массива
-                ImGui::Text("Unsorted Array: %s", arrayToString(record.second.first).c_str()); // Отображаем исходный массив
-                ImGui::Text("Sorted Array: %s", arrayToString(record.second.second).c_str()); // Отображаем отсортированный массив
+                ImGui::TextWrapped("ID: %d", record.first); // Отображаем ID массива
+                ImGui::TextWrapped("Unsorted Array: %s", arrayToString(record.second.first).c_str()); // Отображаем исходный массив
+                ImGui::TextWrapped("Sorted Array: %s", arrayToString(record.second.second).c_str()); // Отображаем отсортированный массив
+                ImGui::PopTextWrapPos(); // Сбрасываем настройки переноса
             }
         }
 
